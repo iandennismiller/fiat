@@ -24,8 +24,15 @@ for root, dirs, filenames in os.walk(includes_dir):
                 files.append(os.path.join(root, file))
         includes.append((final, files))
 
+svn_revision = '$Rev$'
+m = re.match(r'\$R..: (\d+) \$', svn_revision)
+if m:
+    rev = m.group(1)
+else:
+    rev = 0
+
 setup(name='fiat',
-      version='r33',
+      version='r%s' % rev,
       description='fiat - make it so',
       author='Ian Dennis Miller',
       author_email='ian@saperea.com',
