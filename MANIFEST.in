@@ -1,0 +1,4 @@
+recursive-include share *
+recursive-include doc *
+recursive-include sphinx *
+recursive-include fiat *

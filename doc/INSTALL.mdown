@@ -1,0 +1,32 @@
+# downloading fiat
+
+wget http://code.google.com/p/fiat/fiat-r33.tar.gz
+tar xvfz fiat-r33.tar.gz
+cd fiat-r33
+
+(see http://code.google.com/p/fiat for more info)
+
+# installation
+
+python setup.py
+mkdir ~/.fiat
+cp /usr/local/share/example-global.py ~/.fiat/global.py
+
+# Setting up subversion
+
+1. on the subversion server, create a password file and global config
+
+mkdir /etc/fiat
+touch /etc/fiat/svn_passwd
+chmod 600 /etc/fiat/svn_passwd
+
+Populate the file with username/plaintext password pairs:
+
+[users]
+SOMEUSER = SOMEPASSWORD
+
+vi /etc/fiat/svnserve.conf
+[general]
+anon-access = none 
+auth-access = write
+password-db = /etc/fiat/svn_passwd

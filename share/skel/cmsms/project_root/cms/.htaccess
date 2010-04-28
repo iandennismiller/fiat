@@ -1,0 +1,20 @@
+IndexIgnore .htaccess */.??* *~ *# */HEADER* */README* */_vti*
+
+#php_flag magic_quotes_gpc Off
+#php_flag register_globals Off
+#php_flag session.use_trans_sid Off
+
+###
+# Rewrites page.shtml as index.php?page
+
+<IfModule mod_rewrite.c>
+
+ RewriteEngine On
+ RewriteBase /cms/
+
+ RewriteCond %{REQUEST_FILENAME} !-f [NC]
+ RewriteCond %{REQUEST_FILENAME} !-d [NC]
+ RewriteRule ^(.+)$ index.php?page=$1 [QSA]
+</IfModule>
+
+# $Id$
