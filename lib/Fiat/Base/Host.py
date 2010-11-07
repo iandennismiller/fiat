@@ -66,6 +66,8 @@ class BaseHost(object):
         rsync_cmd = "rsync -acz%(simulate)s -e 'ssh -o port=%(ssh_port)i' %(source)s " + \
             "%(ssh_user)s@%(ssh_host)s:%(destination)s| grep -v /$"
 
+        self.Exec.logger.debug(rsync_cmd % dict)
+
         os.system(rsync_cmd % dict)
 
     @loggable

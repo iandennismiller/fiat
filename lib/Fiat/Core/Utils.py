@@ -1,7 +1,7 @@
 import distutils.dir_util
 import os, tempfile, shutil, tarfile, string, re
 from os.path import join, splitext, split, exists
-from shutil import copyfile
+from shutil import copy2
 
 from functools import wraps
 from decorator import decorator
@@ -68,7 +68,7 @@ def copy_directory(source, target):
             to_directory = split(to_)[0]
             if not exists(to_directory):
                 os.makedirs(to_directory)
-            copyfile(from_, to_)
+            copy2(from_, to_)
 
 class Utils(object):
     def __init__(self, Exec):
@@ -139,7 +139,7 @@ class Utils(object):
         if os.path.isfile(full_source):
             (filepath, filename) = os.path.split(full_source)
             #shutil.copyfile(full_source, os.path.join(full_dest, filename))
-            shutil.copy(full_source, os.path.join(full_dest, filename))
+            copy2(full_source, os.path.join(full_dest, filename))
             self.Exec.logger.debug('successfully copied file: %s' % full_dest)
         else:
             copy_directory(full_source, full_dest)

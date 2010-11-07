@@ -1,6 +1,6 @@
 from Fiat.Base.App import BaseApp
 from Fiat.Core.Utils import loggable, copy_directory
-import os, distutils, shutil
+import os, distutils, shutil, subprocess, re, time
 
 class wordpress(BaseApp):
 
@@ -17,29 +17,8 @@ class wordpress(BaseApp):
             'db_pass': r'DB_PASSWORD',
             'db_name': r'DB_NAME',
         }
-
-        self.plugins = [
-            "addquicktag",
-            "add-to-any",
-            "akismet",
-            "best-foot-forward",
-            "configurable-tag-cloud-widget",
-            "disqus-comment-system",
-            "php-code-widget",
-            "get-recent-comments",
-            "google-news-sitemap-generator",
-            "google-sitemap-generator",
-            "organize-series",
-            "search-unleashed",
-            "seo-automatic-links",
-            "wordpresscom-popular-posts"
-            "stats",
-            "wp-auto-tagger",
-            "wp-cache",
-            "wp-polls",
-            "yet-another-related-posts-plugin",
-            "json-feed",
-        ]
+        
+        self.plugins = Instance.Project.Exec.config['wordpress_plugins_global'],
         
         self.plugin_base_url = "http://wordpress.org/extend/plugins"
 
@@ -62,21 +41,31 @@ class wordpress(BaseApp):
 
     @loggable
     def upgrade_global_plugins(self):
-        for plugin in self.plugins:
-            self.Exec.logger.debug("global upgrade on %s" % plugin)
-            cmd = """
-            export FIATPLUGINS='/usr/local/var/fiat/wordpress'
-            export PLUGIN=$1
-            export ZIPFILE=`curl -s http://wordpress.org/extend/plugins/$PLUGIN/ | \
-            grep http://downloads.wordpress.org/plugin/ | \
-            awk '{split($0, a, "'"'"'"); print a[2];}'`
+        self.Exec.logger.debug("global upgrade on %s" % self.plugins)
 
-            wget $ZIPFILE -O $FIATPLUGINS/plugin.zip
-            unzip -o -d $FIATPLUGINS $FIATPLUGINS/plugin.zip
-            rm $FIATPLUGINS/plugin.zip
-            """
-            # TODO: integrate this
-            #os.system("wp_plugin.sh %s" % plugin)
+        for plugin in self.plugins[0]:
+            self.Exec.logger.debug("starting %s" % plugin)
+
+            cfg = {
+                'fiatplugins': '/usr/local/var/fiat/wp_plugins',
+            }
+            
+            output = subprocess.Popen(["curl", "-s", "http://wordpress.org/extend/plugins/%s/" % plugin], stdout=subprocess.PIPE).communicate()[0]
+            m = re.search(r'(http://downloads.wordpress.org/plugin/[^\'\"]+)', output)
+            if m:
+                cfg['zipfile'] = m.group(1)
+
+                cmd_download = """
+                wget %(zipfile)s -O %(fiatplugins)s/plugin.zip;
+                unzip -o -d %(fiatplugins)s %(fiatplugins)s/plugin.zip;
+                rm %(fiatplugins)s/plugin.zip
+                """ % cfg
+
+                os.system(cmd_download)
+                self.Exec.logger.debug("successfully downloaded %s" % cfg['zipfile'])
+                time.sleep(1)
+            else:
+                self.Exec.logger.debug("problem upgrading %s" % plugin)
 
     @loggable
     def install_start(self):
