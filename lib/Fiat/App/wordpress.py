@@ -43,7 +43,7 @@ class wordpress(BaseApp):
     def upgrade_global_plugins(self):
         self.Exec.logger.debug("global upgrade on %s" % self.plugins)
 
-        for plugin in self.plugins[0]:
+        for plugin in self.plugins:
             self.Exec.logger.debug("starting %s" % plugin)
 
             cfg = {

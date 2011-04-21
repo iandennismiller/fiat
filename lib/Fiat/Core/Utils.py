@@ -1,7 +1,7 @@
 import distutils.dir_util
 import os, tempfile, shutil, tarfile, string, re
 from os.path import join, splitext, split, exists
-from shutil import copy2
+#from shutil import copy2
 
 from functools import wraps
 from decorator import decorator
@@ -68,7 +68,8 @@ def copy_directory(source, target):
             to_directory = split(to_)[0]
             if not exists(to_directory):
                 os.makedirs(to_directory)
-            copy2(from_, to_)
+            #copy2(from_, to_)
+            os.link(from_, to_)
 
 class Utils(object):
     def __init__(self, Exec):
@@ -80,17 +81,16 @@ class Utils(object):
 
     @loggable
     def create_build_path(self):
-        if not os.path.isdir(self.Exec.Project.config['build_path']):
-            #distutils.dir_util.mkpath(self.Exec.Project.config['build_path'])
+        if os.path.isdir(self.Exec.Project.config['build_path']):
+            self.Exec.logger.info('build path already exists')
+        else:
             try:
                 os.mkdir(self.Exec.Project.config['build_path'])
             except OSError:
-                os.mkdir(os.path.dirname(os.path.join(self.Exec.Project.config['build_path'])))
-                os.mkdir(self.Exec.Project.config['build_path'])
+                os.system("mkdir -p %s" % self.Exec.Project.config['build_path'])
+                #os.mkdir(os.path.dirname(os.path.join(self.Exec.Project.config['build_path'])))
+                #os.mkdir(self.Exec.Project.config['build_path'])
             self.Exec.logger.info('created build path: %s' % self.Exec.Project.config['build_path'])
-            #os.system("tree %s" % self.Exec.Project.config['build_path'])
-        else:
-            self.Exec.logger.info('build path already exists')
 
     @loggable
     def sed(self, source, change_from, change_to):
@@ -113,7 +113,7 @@ class Utils(object):
 
     @loggable
     def jsmin(self, source):
-        cmd = '/usr/bin/java -jar /Users/idm/bin/yuicompressor-2.4.2.jar -o %(f)s %(f)s' % {'f': os.path.join(self.Exec.Project.config['build_path'], source)}
+        cmd = '/usr/bin/java -jar /Users/idm/Code/Lib/yuicompressor-2.4.2.jar -o %(f)s %(f)s' % {'f': os.path.join(self.Exec.Project.config['build_path'], source)}
         os.system(cmd)
         #print cmd
         # os.system("%s '%s'" % (self.Exec.config['svn_admin_ssh'], ssh_cmd))
@@ -139,7 +139,8 @@ class Utils(object):
         if os.path.isfile(full_source):
             (filepath, filename) = os.path.split(full_source)
             #shutil.copyfile(full_source, os.path.join(full_dest, filename))
-            copy2(full_source, os.path.join(full_dest, filename))
+            #copy2(full_source, os.path.join(full_dest, filename))
+            os.link(full_source, os.path.join(full_dest, filename))
             self.Exec.logger.debug('successfully copied file: %s' % full_dest)
         else:
             copy_directory(full_source, full_dest)

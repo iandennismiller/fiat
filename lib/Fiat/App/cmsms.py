@@ -26,9 +26,9 @@ class cmsms(BaseApp):
         self.Exec.register_task(name="cmsms.start.upgrade", args=0, help="begin upgrading cmsms version", function=self.upgrade_start)
         self.Exec.register_task(name="cmsms.finish", args=0, help="finish cmsms upgrade or install", function=self.upgrade_finish)
 
-        self.Exec.register_task(name="cmsms.uploads.checkin", args=0, help="check in CMSMS uploads", function=self.checkin_uploads)
+        #self.Exec.register_task(name="cmsms.uploads.checkin", args=0, help="check in CMSMS uploads", function=self.checkin_uploads)
         self.Exec.register_task(name="cmsms.theme", args=0, help="deploy cmsms theme", function=self.deploy_theme)
-        self.Exec.register_task(name="cmsms.cache", args=0, help="clear the cmsms cache", function=self.clear_cache)
+        #self.Exec.register_task(name="cmsms.cache", args=0, help="clear the cmsms cache", function=self.clear_cache)
 
     @loggable
     def build(self, dest="cms"):
@@ -184,7 +184,10 @@ class cmsms(BaseApp):
             self.Exec.logger.error("unable to retrieve siteprefs.php, got %s instead" % br.title())
             return
         else:
-            br.form = br.forms().next()
+            #br.select_form("siteprefform_setup")
+            br.select_form(nr=4)
+            #print br.forms
+            #br.form = br.forms().next()
             response = br.submit("clearcache")
             if re.search(r"Cache Cleared", response.read()):
                 self.Exec.logger.info("successfully cleared cache")

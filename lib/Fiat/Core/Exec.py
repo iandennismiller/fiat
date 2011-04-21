@@ -32,7 +32,8 @@ class Exec(object):
             self.Project = module.project(self)
 
             self.Project.config['make_path'] = os.getcwd()
-            self.Project.config['build_path'] = "%s/tmp/build" % self.Project.config['make_path'] 
+            #self.Project.config['build_path'] = "%s/tmp/build" % self.Project.config['make_path'] 
+            self.Project.config['build_path'] = os.path.join("/tmp/fiat/", self.Project.meta['project'])
 
             try:
                 instance_name = os.environ['instance']

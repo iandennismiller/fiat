@@ -1,6 +1,13 @@
 from fabric.api import env, run, local
 import os, sys
 
+def update_plugins_globally(instance='live'):
+    """
+    update wordpress plugins globally
+    """
+    pwd = '/Users/idm/Code/highriseweb/site/rtfa.net'
+    os.system('cd %s; fiat -i %s --wordpress.upgrade.plugins -vv' % (pwd, instance))
+
 def release_docs():
     sys.path.append(".")
     from fabauth import get_auth
