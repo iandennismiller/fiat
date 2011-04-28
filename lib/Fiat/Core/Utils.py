@@ -1,7 +1,6 @@
 import distutils.dir_util
-import os, tempfile, shutil, tarfile, string, re
+import os, tempfile, shutil, tarfile, string, re, logging
 from os.path import join, splitext, split, exists
-#from shutil import copy2
 
 from functools import wraps
 from decorator import decorator
@@ -53,8 +52,14 @@ def unimplemented(f):
         self.Exec.logger.warn("unimplemented base class was called: %s.%s" % (f.__module__, f.__name__))
     return new_f
 
-# http://tarekziade.wordpress.com/2008/07/08/shutilcopytree-small-improvement/
 def copy_directory(source, target):
+    core_copy_directory(source, target, shutil.copy2)
+
+def link_directory(source, target):
+    core_copy_directory(source, target, os.link)
+
+# http://tarekziade.wordpress.com/2008/07/08/shutilcopytree-small-improvement/
+def core_copy_directory(source, target, fn):
     if not os.path.exists(target):
         os.mkdir(target)
     for root, dirs, files in os.walk(source):
@@ -69,7 +74,10 @@ def copy_directory(source, target):
             if not exists(to_directory):
                 os.makedirs(to_directory)
             #copy2(from_, to_)
-            os.link(from_, to_)
+            try:
+                fn(from_, to_)
+            except OSError as (num, msg):
+                logging.getLogger("fiat").info("%s %s" % (msg, to_))
 
 class Utils(object):
     def __init__(self, Exec):
@@ -143,7 +151,8 @@ class Utils(object):
             os.link(full_source, os.path.join(full_dest, filename))
             self.Exec.logger.debug('successfully copied file: %s' % full_dest)
         else:
-            copy_directory(full_source, full_dest)
+            #copy_directory(full_source, full_dest)
+            link_directory(full_source, full_dest)
             #os.system("rsync -a %s %s" % (full_source, full_dest))
             self.Exec.logger.debug('successfully copied path: %s' % full_dest)
 

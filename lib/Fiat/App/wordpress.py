@@ -28,7 +28,7 @@ class wordpress(BaseApp):
         self.Exec.register_task(name="wordpress.start.install", args=0, help="install wordpress src", function=self.install_start)
         self.Exec.register_task(name="wordpress.uploads.checkin", args=0, help="check in wp uploads", function=self.checkin_uploads)
         self.Exec.register_task(name="wordpress.update.plugins", args=0, help="update wordpress plugins", function=self.update_plugins)
-        self.Exec.register_task(name="wordpress.upgrade.plugins", args=0, help="upgrade wordpress plugins", function=self.upgrade_global_plugins)
+        self.Exec.register_task(name="wordpress.upgrade.plugins", args=0, help="global upgrade wordpress plugins", function=self.upgrade_global_plugins)
 
     @loggable
     def update_plugins(self):
@@ -41,16 +41,24 @@ class wordpress(BaseApp):
 
     @loggable
     def upgrade_global_plugins(self):
-        self.Exec.logger.debug("global upgrade on %s" % self.plugins)
+        plugin_list = self.Exec.config['wordpress_plugins_global']
+        plugin_path = self.Exec.config['wp_plugin_path']
 
-        for plugin in self.plugins:
+        self.Exec.logger.debug("global upgrade on %s" % plugin_list)
+
+        if not os.path.exists(plugin_path):
+            os.makedirs(plugin_path)
+
+        for plugin in plugin_list:
             self.Exec.logger.debug("starting %s" % plugin)
 
             cfg = {
-                'fiatplugins': '/usr/local/var/fiat/wp_plugins',
+                #'fiatplugins': '/usr/local/var/fiat/wp_plugins',
+                'fiatplugins': self.Exec.config['wp_plugin_path'],
             }
             
-            output = subprocess.Popen(["curl", "-s", "http://wordpress.org/extend/plugins/%s/" % plugin], stdout=subprocess.PIPE).communicate()[0]
+            output = subprocess.Popen(["curl", "-s", "http://wordpress.org/extend/plugins/%s/" % plugin],
+                stdout=subprocess.PIPE).communicate()[0]
             m = re.search(r'(http://downloads.wordpress.org/plugin/[^\'\"]+)', output)
             if m:
                 cfg['zipfile'] = m.group(1)
